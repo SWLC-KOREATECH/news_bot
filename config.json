@@ -59,6 +59,21 @@
       "name": "주식회사 싸이웰에스엔비",
       "color": "#c0392b",
       "enabled": true
+    },
+    {
+      "name": "일학습병행",
+      "color": "#f39c12",
+      "enabled": true
+    },
+    {
+      "name": "한미약품(주)",
+      "color": "#2980b9",
+      "enabled": true
+    },
+    {
+      "name": "세메스(주)",
+      "color": "#f1c40f",
+      "enabled": true
     }
   ],
   "receivers": [],

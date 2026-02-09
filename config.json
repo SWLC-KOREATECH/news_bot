@@ -19,6 +19,11 @@
       "name": "한국산업인력공단",
       "color": "#2c3e50",
       "enabled": true
+    },
+    {
+      "name": "한국기술교육대학교",
+      "color": "#e74c3c",
+      "enabled": true
     }
   ],
   "receivers": [],

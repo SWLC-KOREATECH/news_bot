@@ -6,23 +6,8 @@
       "enabled": true
     },
     {
-      "name": "직업훈련",
-      "color": "#e67e22",
-      "enabled": true
-    },
-    {
-      "name": "고용노동부",
-      "color": "#7f8c8d",
-      "enabled": true
-    },
-    {
       "name": "한국산업인력공단",
       "color": "#2c3e50",
-      "enabled": true
-    },
-    {
-      "name": "한국기술교육대학교",
-      "color": "#e74c3c",
       "enabled": true
     }
   ],

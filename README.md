@@ -69,7 +69,10 @@ AI 토큰을 효율적으로 사용하기 위해 다음 순서로 처리됩니�
 
 1. 이 레포지토리 상단의 **[Use this template]** 버튼 클릭
 2. Repository name 입력 (예: `my-news-bot`)
-3. **Create repository** 클릭
+3. **Public/Private 선택**
+   > [!IMPORTANT]
+   > **개인정보 보호(이메일 주소 등)를 위해 `Private` 레포지토리로 생성하는 것을 강력히 권장합니다.** `Public`으로 생성 시 `config.json`에 기입한 이메일 주소가 공개될 수 있습니다.
+4. **Create repository** 클릭
 
 > 💡 Template을 사용하면 대시보드, 설정 파일 등 모든 파일이 복사됩니다!
 

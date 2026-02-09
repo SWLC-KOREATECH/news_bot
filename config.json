@@ -1,13 +1,29 @@
 {
   "keywords": [
-    {"name": "일학습병행", "color": "#3498db", "enabled": true},
-    {"name": "직업훈련", "color": "#e67e22", "enabled": true},
-    {"name": "고용노동부", "color": "#7f8c8d", "enabled": true},
-    {"name": "한국산업인력공단", "color": "#2c3e50", "enabled": true}
+    {
+      "name": "일학습병행",
+      "color": "#3498db",
+      "enabled": true
+    },
+    {
+      "name": "직업훈련",
+      "color": "#e67e22",
+      "enabled": true
+    },
+    {
+      "name": "고용노동부",
+      "color": "#7f8c8d",
+      "enabled": true
+    },
+    {
+      "name": "한국산업인력공단",
+      "color": "#2c3e50",
+      "enabled": true
+    }
   ],
   "receivers": [],
   "settings": {
-    "similarity_threshold": 0.4,
-    "max_articles_per_keyword": 100
+    "similarity_threshold": 0.5,
+    "max_articles_per_keyword": 50
   }
 }

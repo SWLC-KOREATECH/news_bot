@@ -101,7 +101,9 @@ async function connectAndLoadConfig() {
 
         if (response.ok) {
             const data = await response.json();
-            const content = atob(data.content);
+            // UTF-8 디코딩: Base64 -> Uint8Array -> String
+            const bytes = Uint8Array.from(atob(data.content.replace(/\s/g, '')), c => c.charCodeAt(0));
+            const content = new TextDecoder().decode(bytes);
             config = JSON.parse(content);
             config._sha = data.sha;
         } else if (response.status === 404) {
@@ -353,7 +355,11 @@ async function saveToGitHub() {
 
     try {
         const saveConfig = getConfigForSave();
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify(saveConfig, null, 2))));
+        // UTF-8 인코딩: String -> Uint8Array -> Base64
+        const jsonStr = JSON.stringify(saveConfig, null, 2);
+        const bytes = new TextEncoder().encode(jsonStr);
+        const binString = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+        const content = btoa(binString);
 
         const body = {
             message: `Update config - ${new Date().toLocaleString('ko-KR')}`,

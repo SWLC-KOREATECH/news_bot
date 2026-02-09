@@ -15,6 +15,7 @@ import difflib
 import urllib3
 import xml.etree.ElementTree as ET
 from urllib.parse import quote
+from googlenewsdecoder import new_decoderv1
 
 # SSL 경고 무시
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -160,24 +161,46 @@ def summarize_article(text: str) -> str:
     )
     return call_groq_api(prompt)
 
+# ============== 구글 뉴스 URL 변환 ==============
+def resolve_google_news_url(google_url: str) -> str:
+    """구글 뉴스 리다이렉트 URL을 실제 기사 URL로 변환"""
+    if not google_url or "news.google.com" not in google_url:
+        return google_url
+    
+    try:
+        # googlenewsdecoder 라이브러리 사용
+        result = new_decoderv1(google_url)
+        if result.get("status"):
+            return result["decoded_url"]
+        return google_url
+    except Exception as e:
+        print(f"[WARN] URL 변환 실패: {e}")
+        return google_url
+
 # ============== 본문 추출 ==============
 def extract_article_content(url: str) -> str:
     """URL에서 기사 본문 추출"""
     if not url: 
         return ""
+    
+    # 구글 뉴스 URL이면 실제 URL로 변환
+    actual_url = resolve_google_news_url(url)
+    if actual_url != url:
+        print(f"   [URL 변환] {url[:50]}... -> {actual_url[:50]}...")
+    
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
     try:
-        # Trafilatura 시도
-        downloaded = trafilatura.fetch_url(url)
+        # Trafilatura 시도 (변환된 URL 사용)
+        downloaded = trafilatura.fetch_url(actual_url)
         if downloaded:
             text = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
             if text and len(text) >= 100: 
                 return text
 
-        # Requests 시도
-        resp = requests.get(url, headers=headers, timeout=10, verify=False)
+        # Requests 시도 (변환된 URL 사용)
+        resp = requests.get(actual_url, headers=headers, timeout=10, verify=False)
         if resp.status_code == 200:
             text = trafilatura.extract(resp.text, include_comments=False)
             if text and len(text) >= 100: 

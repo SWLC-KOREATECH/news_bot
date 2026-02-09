@@ -1,28 +1,63 @@
 {
   "keywords": [
     {
-      "name": "일학습병행",
-      "color": "#3498db",
+      "name": "주식회사은현점블루핸즈",
+      "color": "#2ecc71",
       "enabled": true
     },
     {
-      "name": "직업훈련",
+      "name": "주식회사동일이엔지",
       "color": "#e67e22",
       "enabled": true
     },
     {
-      "name": "고용노동부",
-      "color": "#7f8c8d",
+      "name": "하모니씨앤씨(주)",
+      "color": "#2ecc71",
       "enabled": true
     },
     {
-      "name": "한국산업인력공단",
-      "color": "#2c3e50",
+      "name": "윤디스크(주)",
+      "color": "#9b59b6",
       "enabled": true
     },
     {
-      "name": "한국기술교육대학교",
+      "name": "주식회사능인솔루션",
       "color": "#e74c3c",
+      "enabled": true
+    },
+    {
+      "name": "주식회사에스이든",
+      "color": "#1abc9c",
+      "enabled": true
+    },
+    {
+      "name": "주식회사 글로벌탑넷",
+      "color": "#f39c12",
+      "enabled": true
+    },
+    {
+      "name": "세무법인자인",
+      "color": "#34495e",
+      "enabled": true
+    },
+    {
+      "name": "주식회사 기린",
+      "color": "#16a085",
+      "enabled": true
+    },
+    {
+      "name": "(주)오르카아이티",
+      "color": "#d35400",
+      "enabled": true
+    },
+    {
+      "name": "(주)성원엔지니어링",
+      "color": "#8e44ad",
+      "enabled": true
+    },
+    {
+      "name": "주식회사 싸이웰에스엔비",
+      "color": "#c0392b",
       "enabled": true
     }
   ],

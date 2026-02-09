@@ -2,3 +2,4 @@ requests
 pandas
 trafilatura
 googlenewsdecoder
+google-genai

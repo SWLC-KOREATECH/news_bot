@@ -16,6 +16,8 @@ import urllib3
 import xml.etree.ElementTree as ET
 from urllib.parse import quote
 from googlenewsdecoder import new_decoderv1
+from google import genai
+from google.genai import types
 
 # SSL 경고 무시
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -81,7 +83,7 @@ SIMILARITY_THRESHOLD = CONFIG["settings"].get("similarity_threshold", 0.5)
 MAX_ARTICLES = CONFIG["settings"].get("max_articles_per_keyword", 50)
 
 # 환경변수 로드
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 EMAIL_USER = os.environ.get("EMAIL_USER")
 EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD")
 
@@ -113,39 +115,26 @@ def get_source_score(url, title):
             return score, source
     return TRUSTED_SOURCES["default"], "기타"
 
-# ============== AI 기능 (Groq API) ==============
-def call_groq_api(prompt):
-    """Groq API 호출"""
-    if not GROQ_API_KEY: 
-        print("[ERROR] GROQ_API_KEY가 없습니다.")
+# ============== AI 기능 (Gemini API) ==============
+def call_gemini_api(prompt):
+    """Gemini API 호출"""
+    if not GEMINI_API_KEY: 
+        print("[ERROR] GEMINI_API_KEY가 없습니다.")
         return ""
     
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    
-    data = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "system", "content": "You are a helpful news summarizer. Answer in Korean."},
-            {"role": "user", "content": prompt}
-        ],
-        "temperature": 0.5,
-        "max_tokens": 500
-    }
-    
     try:
-        response = requests.post(url, headers=headers, json=data, timeout=20)
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content'].strip()
-        else:
-            print(f"[WARN] Groq API 오류: {response.status_code}")
-            return ""
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.5,
+                max_output_tokens=500
+            )
+        )
+        return response.text.strip()
     except Exception as e:
-        print(f"[WARN] Groq 연결 오류: {e}")
+        print(f"[WARN] Gemini API 오류: {e}")
         return ""
 
 def summarize_article(text: str) -> str:
@@ -159,7 +148,7 @@ def summarize_article(text: str) -> str:
         "반드시 위 형식을 지켜서 한국어로 작성해.\n\n"
         f"기사 내용:\n{text[:3500]}"
     )
-    return call_groq_api(prompt)
+    return call_gemini_api(prompt)
 
 # ============== 구글 뉴스 URL 변환 ==============
 def resolve_google_news_url(google_url: str) -> str:

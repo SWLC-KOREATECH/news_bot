@@ -488,7 +488,7 @@ def main():
         
         if content:
             summary = summarize_article(content)
-            time.sleep(1)  # API Rate Limit 고려
+            time.sleep(6)  # Gemini API Rate Limit (분당 10 요청)
         
         if not summary:
             summary = "- 요약을 생성할 수 없습니다."

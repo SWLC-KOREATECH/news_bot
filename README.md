@@ -1,4 +1,4 @@
-# 🤖 전담자를 위한 AI 뉴스 브리핑 봇(News Bot)
+# 🤖 AI 뉴스 브리핑 봇(News Bot)
 
 **"매일 아침, 쏟아지는 뉴스 속에서 우리 센터의 관심 이슈만 쏙쏙 골라드립니다."**
 
@@ -65,8 +65,8 @@
 
 1. 이 저장소 상단의 **[Use this template]** 버튼을 클릭합니다.
    ![1770772072925](image/README/1770772072925.png)
-2. [Create a new repository]를 선택합니다.
-3. 저장소 설정에서 Repository name을 입력하고 반드시 [Private]을 체크하세요. (공개 시 이메일 정보가 노출될 수 있습니다.)![1770772149594](image/README/1770772149594.png)
+2. **[Create a new repository]**를 선택합니다.
+3. 저장소 설정에서 Repository name을 입력하고 반드시 **[Private]**을 체크하세요.(공개 시 이메일 정보 노출됨.)![1770772149594](image/README/1770772149594.png)
 
 <br>
 

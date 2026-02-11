@@ -158,7 +158,6 @@ def filter_unique_articles_with_llm(articles):
         
     try:
         # 응답에서 숫자만 추출 (예: "1, 4, 7" -> [0, 3, 6])
-        import re
         indices = [int(idx) - 1 for idx in re.findall(r'\d+', response)]
         # 유효한 범위 내의 인덱스만 선택
         unique_indices = [i for i in indices if 0 <= i < len(articles)]
@@ -523,7 +522,7 @@ def main():
         print(f"[STEP 2.5] AI 기반 고도화 중복 제거...")
         final_unique_rows = []
         # 키워드별로 묶어서 AI에게 전달 (API 효율성 및 컨택스트 유지)
-        for kw_info in config.get("keywords", []):
+        for kw_info in CONFIG.get("keywords", []):
             if not kw_info.get("enabled", True): continue
             kw = kw_info["name"]
             kw_articles = [r for r in unique_rows if r["키워드"] == kw]

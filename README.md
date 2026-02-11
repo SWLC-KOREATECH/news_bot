@@ -1,81 +1,66 @@
-# 📰 AI 뉴스 요약 및 자동 발송 봇 (News Bot)
+# 🤖 전담자를 위한 AI 뉴스 브리핑 비서 (News Bot)
 
-전담자들을 위한 일학습병행 이슈 및 학습기업 관련 뉴스를 매일 아침 AI로 요약하여 이메일로 발송해주는 자동화 시스템입니다.
+**"매일 아침, 쏟아지는 뉴스 속에서 우리 기업의 핵심 이슈만 쏙쏙 골라드립니다."**
 
----
-
-## ⚠️ 필수 보안 주의사항 (중요!)
-
-> [!CAUTION]
-> **이 저장소는 반드시 비공개(Private)로 유지해야 합니다.**
-> - `config.json`에 검색 키워드 정보가 포함됩니다.
-> - GitHub Secrets에 이메일 주소 및 API 키가 저장됩니다.
-> - **저장소를 Public으로 설정할 경우, 작성한 키워드나 수집된 데이터 내역이 외부에 노출될 수 있습니다.**
-
-### 1. 템플릿으로 시작하기 (추천)
-- 이 저장소 상단의 **[Use this template]** 버튼을 클릭하세요.
-- **[Create a new repository]**를 선택합니다.
-- 저장소 이름 설정 시 **[Private]**을 반드시 체크하여 생성하세요.
-- 이렇게 하면 기존 코드를 그대로 복사하면서도 나만의 비공개 저장소로 안전하게 시작할 수 있습니다.
-
-### 2. 직접 복제하기 (수동)
-- 이 저장소의 코드를 ZIP으로 다운로드합니다.
-- 본인의 GitHub 계정에 **새로운 저장소(New Repository)**를 만듭니다.
-- 설정 화면에서 **Public 대신 [Private]**을 선택합니다.
-- 다운로드한 파일들을 새 Private 저장소에 업로드합니다.
+본 프로젝트는 공동훈련센터 전담자분들이 매일 수십 개의 기사를 직접 찾아보는 수고를 덜어드리기 위해 개발되었습니다. 설정한 키워드에 맞는 최신 뉴스를 AI(Gemini)가 분석하여, 매일 아침 여러분의 메일함으로 깔끔하게 전달합니다.
 
 ---
 
-## 🛠️ 초기 설정 방법 (GitHub Secrets)
+## 🚀 3분 만에 시작하기 (Setup Guide)
 
-이메일 발송 및 AI 요약을 위해 GitHub 저장소 설정에서 아래 변수들을 등록해야 합니다.
+### 1단계: 나만의 비공개 저장소 만들기
+보안을 위해 아래 방법을 통해 본인의 계정으로 코드를 가져오세요.
 
-1.  본인의 저장소 메뉴에서 **Settings** -> **Secrets and variables** -> **Actions**로 이동합니다.
-2.  **New repository secret** 버튼을 눌러 아래 항목들을 하나씩 추가하세요.
+1.  이 저장소 상단의 **[Use this template]** 버튼을 클릭합니다.
+2.  **[Create a new repository]**를 선택합니다.
+3.  저장소 설정에서 **반드시 [Private]**을 체크하세요. (공개 시 이메일 정보가 노출될 수 있습니다.)
 
-| Secret 이름 | 설명 | 예시 |
-|-------------|------|------|
-| `GEMINI_API_KEY` | Google AI Studio에서 발급받은 Gemini API 키 | `AIzaSy...` |
-| `EMAIL_USER` | 알림을 보낼 Gmail 계정 주소 | `yourname@gmail.com` |
-| `EMAIL_PASSWORD` | Gmail 앱 비밀번호 ([발급방법](https://myaccount.google.com/apppasswords)) | `abcd efgh ijkl mnop` |
-| `EMAIL_RECEIVER` | 뉴스를 받을 수신자 이메일 (여러 명일 경우 쉼표로 구분) | `user1@test.com, user2@test.com` |
+### 2단계: 필수 열쇠(Secrets) 등록하기
+GitHub 저장소의 **Settings** > **Secrets and variables** > **Actions** 메뉴에서 아래 4가지 값을 등록합니다.
 
----
-
-## 📝 커스터마이징 가이드
-
-### 1. 검색 키워드 변경하기
-`config.json` 파일을 열어 `keywords` 섹션을 수정하세요.
-
-```json
-"keywords": [
-  {
-    "name": "원하는키워드",
-    "color": "#색상코드",
-    "enabled": true
-  }
-]
-```
-*   **주의**: 기업명을 넣을 때 `(주)`, `주식회사` 등은 빼고 핵심 이름만 넣는 것이 검색 결과가 더 잘 나옵니다 (예: `한미약품`).
-
-### 2. 수신자 추가/변경하기
-두 가지 방법이 있습니다.
-- **간편한 방법**: GitHub Secrets의 `EMAIL_RECEIVER` 값을 수정합니다 (추천).
-- **파일 직접 수정**: `config.json`의 `receivers` 배열에 이메일 주소를 추가합니다.
+| Secret 이름 | 설명 |
+|-------------|------|
+| `GEMINI_API_KEY` | Google AI Studio에서 발급받은 API 키 |
+| `EMAIL_USER` | 알림을 보낼 Gmail 계정 주소 |
+| `EMAIL_PASSWORD` | Gmail 앱 비밀번호 ([발급방법](https://myaccount.google.com/apppasswords)) |
+| `EMAIL_RECEIVER` | 뉴스를 받을 수신자 이메일 (쉼표로 여러 명 가능) |
 
 ---
 
-## 🚀 작동 원리
-1.  **매일 아침 자동 실행**: GitHub Actions가 매일 지정된 시간에 뉴스를 찾습니다.
-2.  **구글 뉴스 RSS 크롤링**: 설정된 키워드로 최신 보도 자료를 수집합니다.
-3.  **AI 요약 (Gemini 2.0 Flash)**: 복잡한 내용을 핵심/배경/영향 3줄로 요약합니다.
-    - *할당량 준수*: 분당 10회 요청 제한을 지키기 위해 기사당 6초의 지연 시간을 가집니다.
-4.  **이메일 발송**: 요약된 내용을 깔끔한 HTML 리포트로 발신합니다.
+## 🧪 제대로 설정됐는지 테스트해보기 (Manual Test)
+
+설정을 마치셨다면, 내일까지 기다릴 필요 없이 즉시 작동 여부를 확인할 수 있습니다.
+
+1.  GitHub 저장소 상단의 **[Actions]** 탭을 클릭합니다.
+2.  왼쪽 목록에서 **[Daily News Crawl]** 워크플로우를 선택합니다.
+3.  우측의 **[Run workflow]** 버튼을 누르고, 다시 한 번 초록색 **[Run workflow]**를 클릭합니다.
+4.  잠시 후 목록에 작업이 생성되며, 성공적으로 완료되면 설정한 이메일로 첫 번째 뉴스 리포트가 도착합니다!
 
 ---
 
-## 📄 기술 스택
-- **Language**: Python 3.10
-- **AI Model**: Google Gemini 2.0 Flash
-- **Automation**: GitHub Actions
-- **Crawler**: Google News RSS + googlenewsdecoder
+## ⚙️ 커스터마이징 가이드
+
+### 1. 검색 키워드 및 필터 수정
+`config.json` 파일을 수정하여 원하는 정보를 골라받으세요.
+- **키워드**: 우리 센터가 관리하는 기업명이나 관심 주제를 추가하세요.
+- **팁**: 기업명 입력 시 `(주)`와 같은 수식어는 빼고 입력하는 것이 검색 정확도가 높습니다.
+
+### 2. 실행 시간(스케줄) 변경하기
+뉴스 봇은 기본적으로 매일 아침(한국 시간 기준)에 실행됩니다. 시간을 바꾸고 싶다면:
+1.  `.github/workflows/daily.yml` 파일을 엽니다.
+2.  `cron: '0 23 * * *'` 부분을 수정하세요. (세계 표준시 UTC 기준입니다. 한국 시간은 +9시간을 더해야 합니다.)
+    - 예: 한국 시간 아침 8시 실행 → `'0 23 * * *'` (전날 밤 11시)
+    - 예: 한국 시간 낮 12시 실행 → `'0 3 * * *'`
+
+---
+
+## 🔒 보안 및 주의사항
+- **비공개 권장**: 이 저장소는 여러분의 소중한 키워드와 이메일 정보를 담고 있습니다. 절대 **Public**으로 전환하지 마세요.
+- **API 할당량**: Gemini 무료 티어의 속도 제한을 준수하기 위해 기사당 약 6초의 지연 시간이 포함되어 있습니다. 너무 많은 키워드(50개 이상)를 넣으면 실행 시간이 길어질 수 있습니다.
+
+---
+
+## 📄 기술 스택 및 오픈 소스
+- **AI**: Google Gemini 2.0 Flash
+- **Engine**: Python, GitHub Actions
+- **Deduplication**: Semantic Word-Set Analysis (자체 고도화 중복 제거)

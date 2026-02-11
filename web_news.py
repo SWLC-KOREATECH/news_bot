@@ -211,16 +211,24 @@ def call_gemini_api(prompt):
         return ""
 
 def summarize_article(text: str) -> str:
-    """기사 요약 (3줄 형식, 말머리 제거)"""
+    """기사 요약 (3줄 형식, 서두/말머리 제거)"""
     prompt = (
         "아래 뉴스 기사를 읽고 중요한 내용을 딱 3문장으로 요약해줘.\n"
         "조건:\n"
         "1. 각 문장은 가독성 좋게 불렛포인트(-)로 시작할 것.\n"
         "2. '핵심:', '배경:' 같은 말머리 단어는 절대 넣지 말고 내용만 작성할 것.\n"
-        "3. 한국어로 정중하게 작성할 것.\n\n"
+        "3. '다음은', '아래는', '요약입니다' 같은 서두나 도입 문장 없이 바로 요약 내용만 출력할 것.\n"
+        "4. 한국어로 정중하게 작성할 것.\n\n"
         f"기사 내용:\n{text[:3500]}"
     )
-    return call_gemini_api(prompt)
+    result = call_gemini_api(prompt)
+    if result:
+        # 불필요한 서두 문장 제거 (예: "다음은 뉴스 기사의 핵심 내용을 3문장으로 요약한 것입니다.")
+        lines = result.split('\n')
+        filtered = [line for line in lines if line.strip() and line.strip().startswith('-')]
+        if filtered:
+            return '\n'.join(filtered)
+    return result
 
 # ============== 구글 뉴스 URL 변환 ==============
 def resolve_google_news_url(google_url: str) -> str:

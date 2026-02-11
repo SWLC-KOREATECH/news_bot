@@ -615,7 +615,7 @@ def main():
         combined = combined.drop_duplicates(subset=["_title_norm"], keep="last")
         combined = combined.sort_values("수집시각(KST)", ascending=False)
 
-        display_cols = ["키워드","제목","출처","요약","원문링크","발행일(KST)","수집시각(KST)"]
+        display_cols = ["키워드","제목","출처","요약","원문링크","발행일(KST)","수집시각(KST)","_title_norm"]
         combined[display_cols].to_csv(DATA_DIR / "ALL.csv", index=False, encoding="utf-8-sig")
         df_final_new[display_cols].to_csv(DATA_DIR / "NEW_latest.csv", index=False, encoding="utf-8-sig")
         

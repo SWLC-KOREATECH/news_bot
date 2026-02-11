@@ -102,8 +102,82 @@ def clean_html(raw_html):
     return cleantext.replace("&quot;", "'").replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&#39;", "'")
 
 def normalize_title(title):
-    """제목 정규화 (비교용)"""
-    return re.sub(r'[^가-힣a-zA-Z0-9]', '', title)
+    """제목 정규화 (중복 방지를 위해 언론사명, 구두점 등 제거)"""
+    # 1. [...]나 (...) 형태의 언론사 태그 제거
+    title = re.sub(r'\[.*?\]|\(.*?\)', '', title)
+    # 2. 특수문자 제거 및 공백 유지 (단어 단위 분절을 위해)
+    title = re.sub(r'[^가-힣a-zA-Z0-9\s]', '', title)
+    return title.strip()
+
+def is_similar_title(t1, t2, threshold=0.5):
+    """두 제목이 실질적으로 같은 내용을 다루는지 검사"""
+    if not t1 or not t2: return False
+    
+    # 순수 문자열 유사도 (difflib)
+    ratio = difflib.SequenceMatcher(None, t1.replace(" ", ""), t2.replace(" ", "")).ratio()
+    if ratio >= threshold: return True
+    
+    # 단어 집합 유사도 (Jaccard Similarity 개념 활용)
+    # 어순이 다르거나 조사가 달라도 핵심 단어가 겹치면 중복으로 판단
+    words1 = set(t1.split())
+    words2 = set(t2.split())
+    
+    if not words1 or not words2: return False
+    
+    intersection = words1.intersection(words2)
+    smaller_set_size = min(len(words1), len(words2))
+    
+    # 핵심 단어의 60% 이상이 겹치면 중복으로 간주
+    if len(intersection) / smaller_set_size >= 0.6:
+        return True
+        
+    return False
+
+def filter_unique_articles_with_llm(articles):
+    """LLM을 사용하여 서로 다른 언론사의 비슷한 기사들을 그룹화하고 대표 기사만 선정"""
+    if len(articles) <= 1:
+        return articles
+
+    # 제목 리스트 생성 (번호 포함)
+    titles_list = "\n".join([f"{i+1}. {a['제목']}" for i, a in enumerate(articles)])
+    
+    prompt = (
+        "아래 뉴스 제목들을 읽고, 서로 다른 언론사에서 보도했지만 사실상 같은 소식이나 사건을 다루는 기사들을 그룹화해줘.\n"
+        "각 그룹 내에서는 가장 대표성이 있는 기사 번호 하나만 선택해.\n"
+        "최종적으로 선택된 기사 번호들만 쉼표로 구분해서 보내줘. 다른 설명은 하지 마.\n"
+        "예시: 1, 4, 7\n\n"
+        f"뉴스 제목 리스트:\n{titles_list}"
+    )
+    
+    print(f"   [AI 그룹화] {len(articles)}건 분석 중...")
+    response = call_gemini_api(prompt)
+    time.sleep(6) # API Rate Limit 준수
+    
+    if not response:
+        return articles
+        
+    try:
+        # 응답에서 숫자만 추출 (예: "1, 4, 7" -> [0, 3, 6])
+        import re
+        indices = [int(idx) - 1 for idx in re.findall(r'\d+', response)]
+        # 유효한 범위 내의 인덱스만 선택
+        unique_indices = [i for i in indices if 0 <= i < len(articles)]
+        
+        if not unique_indices:
+            return articles
+            
+        # 선택된 기사들만 반환 (순서 유지)
+        seen = set()
+        chosen_articles = []
+        for i in unique_indices:
+            if i not in seen:
+                chosen_articles.append(articles[i])
+                seen.add(i)
+        
+        return chosen_articles
+    except Exception as e:
+        print(f"   [WARN] AI 그룹화 분석 실패: {e}")
+        return articles
 
 def get_source_score(url, title):
     """출처 신뢰도 점수 반환"""
@@ -138,14 +212,13 @@ def call_gemini_api(prompt):
         return ""
 
 def summarize_article(text: str) -> str:
-    """기사 요약 (3줄 형식)"""
+    """기사 요약 (3줄 형식, 말머리 제거)"""
     prompt = (
-        "아래 뉴스 기사를 읽고 정확히 3줄로 요약해줘.\n"
-        "형식:\n"
-        "- 핵심: (무엇이 일어났는지 한 문장)\n"
-        "- 배경: (왜 일어났는지/맥락)\n"
-        "- 영향: (어떤 의미/전망이 있는지)\n\n"
-        "반드시 위 형식을 지켜서 한국어로 작성해.\n\n"
+        "아래 뉴스 기사를 읽고 중요한 내용을 딱 3문장으로 요약해줘.\n"
+        "조건:\n"
+        "1. 각 문장은 가독성 좋게 불렛포인트(-)로 시작할 것.\n"
+        "2. '핵심:', '배경:' 같은 말머리 단어는 절대 넣지 말고 내용만 작성할 것.\n"
+        "3. 한국어로 정중하게 작성할 것.\n\n"
         f"기사 내용:\n{text[:3500]}"
     )
     return call_gemini_api(prompt)
@@ -389,9 +462,11 @@ def main():
             if c not in df_existing.columns: 
                 df_existing[c] = ""
         existing_titles = list(df_existing["_title_norm"].dropna().astype(str))
+        existing_urls = list(df_existing["원문링크"].dropna().astype(str))
     else:
         df_existing = pd.DataFrame(columns=req_cols)
         existing_titles = []
+        existing_urls = []
 
     # === 1단계: 뉴스 수집 (구글 RSS) ===
     print("[STEP 1] 뉴스 수집 중...")
@@ -406,30 +481,60 @@ def main():
 
     print(f"   총 {len(raw_rows)}건 수집 완료")
 
-    # === 2단계: 중복 제거 (제목 유사도) ===
-    print(f"[STEP 2] 중복 제거 (유사도 {int(SIMILARITY_THRESHOLD*100)}%)...")
+    # === 2단계: 중복 제거 (URL + 제목 유사도) ===
+    print(f"[STEP 2] 중복 제거 (URL 매칭 및 유사도 {int(SIMILARITY_THRESHOLD*100)}%)...")
     unique_rows = []
     
     for row in raw_rows:
         new_title_norm = row["_title_norm"]
+        new_url = row["원문링크"]
         is_duplicate = False
         
-        # 기존 ALL.csv와 비교
-        for exist_title in existing_titles:
-            if difflib.SequenceMatcher(None, new_title_norm, exist_title).ratio() >= SIMILARITY_THRESHOLD:
-                is_duplicate = True
-                break
+        # 1. URL 기반 중복 체크 (가장 정확)
+        if new_url in existing_urls:
+            is_duplicate = True
+        
+        # 2. 제목 유사도 기반 체크 (이미 URL로 발견되지 않은 경우)
+        if not is_duplicate:
+            for exist_title in existing_titles:
+                if is_similar_title(new_title_norm, exist_title, SIMILARITY_THRESHOLD):
+                    is_duplicate = True
+                    break
+        
         if is_duplicate: 
             continue
         
-        # 현재 수집된 기사끼리 비교
+        # 3. 현재 수집된 기사 내에서 중복 체크
         for accepted in unique_rows:
-            if difflib.SequenceMatcher(None, new_title_norm, accepted["_title_norm"]).ratio() >= SIMILARITY_THRESHOLD:
+            # URL 중복
+            if new_url == accepted["원문링크"]:
+                is_duplicate = True
+                break
+            # 제목 유사도 중복
+            if is_similar_title(new_title_norm, accepted["_title_norm"], SIMILARITY_THRESHOLD):
                 is_duplicate = True
                 break
         
         if not is_duplicate:
             unique_rows.append(row)
+
+    # === 2.5단계: AI 기반 고도화 중복 제거 (LLM Grouping) ===
+    if unique_rows:
+        print(f"[STEP 2.5] AI 기반 고도화 중복 제거...")
+        final_unique_rows = []
+        # 키워드별로 묶어서 AI에게 전달 (API 효율성 및 컨택스트 유지)
+        for kw_info in config.get("keywords", []):
+            if not kw_info.get("enabled", True): continue
+            kw = kw_info["name"]
+            kw_articles = [r for r in unique_rows if r["키워드"] == kw]
+            
+            if len(kw_articles) > 1:
+                grouped = filter_unique_articles_with_llm(kw_articles)
+                final_unique_rows.extend(grouped)
+            else:
+                final_unique_rows.extend(kw_articles)
+        
+        unique_rows = final_unique_rows
 
     # === 3단계: 신뢰도 순 정렬 및 상위 N개 선택 ===
     print(f"[STEP 3] 신뢰도 순 정렬...")

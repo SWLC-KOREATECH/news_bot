@@ -6,11 +6,6 @@
       "enabled": true
     },
     {
-      "name": "고용노동부",
-      "color": "#2980b9",
-      "enabled": true
-    },
-    {
       "name": "한국산업인력공단",
       "color": "#27ae60",
       "enabled": true
